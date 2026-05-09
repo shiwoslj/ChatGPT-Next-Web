@@ -1552,7 +1552,12 @@ export function Settings() {
           </ListItem>
 
           <ListItem
-            title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
+            title={Locale.Settings.Update.Version(
+              clientConfig?.commitHash &&
+                clientConfig.commitHash !== "unknown"
+                ? `${currentVersion ?? "unknown"} (${clientConfig.commitHash.slice(0, 7)})`
+                : (currentVersion ?? "unknown"),
+            )}
             subTitle={
               checkingUpdate
                 ? Locale.Settings.Update.IsChecking
