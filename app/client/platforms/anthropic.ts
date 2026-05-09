@@ -179,14 +179,32 @@ export class ClaudeApi implements LLMApi {
       });
     }
 
+    // Claude 4.5+ rejects sending both temperature and top_p together;
+    // Claude 4.7+ deprecates temperature entirely. Match the minor version
+    // (1–2 digits) and excludes legacy date-suffixed IDs like
+    // "claude-opus-4-20250514" where the segment after "4-" is an 8-digit date.
+    const claude4Match =
+      /claude-(?:haiku|sonnet|opus)-4-(\d{1,2})(?:-|$)/i.exec(
+        modelConfig.model,
+      );
+    const claude4Minor = claude4Match ? parseInt(claude4Match[1], 10) : 0;
+    const isClaude47Plus = claude4Minor >= 7;
+    const isClaude45Or46 = claude4Minor === 5 || claude4Minor === 6;
+
     const requestBody: AnthropicChatRequest = {
       messages: prompt,
       stream: shouldStream,
 
       model: modelConfig.model,
       max_tokens: modelConfig.max_tokens,
-      temperature: modelConfig.temperature,
-      top_p: modelConfig.top_p,
+      ...(isClaude47Plus
+        ? { top_p: modelConfig.top_p }
+        : isClaude45Or46
+        ? { temperature: modelConfig.temperature }
+        : {
+            temperature: modelConfig.temperature,
+            top_p: modelConfig.top_p,
+          }),
       // top_k: modelConfig.top_k,
       top_k: 5,
     };
