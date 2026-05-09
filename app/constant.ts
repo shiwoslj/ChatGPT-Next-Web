@@ -459,6 +459,26 @@ export const KnowledgeCutOffDate: Record<string, string> = {
   "gemini-pro-vision": "2023-12",
   "deepseek-chat": "2024-07",
   "deepseek-coder": "2024-07",
+  // GPT-5 / GPT-5.1 family (cutoff per OpenAI release notes)
+  "gpt-5": "2024-10",
+  "gpt-5-mini": "2024-10",
+  "gpt-5-nano": "2024-10",
+  "gpt-5-chat": "2024-10",
+  "gpt-5-pro": "2024-10",
+  "gpt-5-codex": "2024-10",
+  "gpt-5.1": "2024-10",
+  "gpt-5.1-mini": "2024-10",
+  "gpt-5.1-nano": "2024-10",
+  "gpt-5.1-codex": "2024-10",
+  // Claude 4.x family
+  "claude-sonnet-4-20250514": "2025-03",
+  "claude-opus-4-20250514": "2025-03",
+  "claude-sonnet-4-5": "2025-07",
+  "claude-haiku-4-5": "2025-07",
+  "claude-sonnet-4-6": "2025-07",
+  "claude-opus-4-5": "2025-07",
+  "claude-opus-4-6": "2025-07",
+  "claude-opus-4-7": "2026-01",
 };
 
 export const DEFAULT_TTS_ENGINE = "OpenAI-TTS";
@@ -539,6 +559,13 @@ const openaiModels = [
   "o3-mini",
   "o3",
   "o4-mini",
+  // GPT-5.1 family (released Nov 2025)
+  "gpt-5.1",
+  "gpt-5.1-mini",
+  "gpt-5.1-nano",
+  "gpt-5-codex",
+  "gpt-5.1-codex",
+  "gpt-5-pro",
 ];
 
 const googleModels = [
@@ -561,7 +588,11 @@ const googleModels = [
   "gemini-2.0-pro-exp",
   "gemini-2.0-pro-exp-02-05",
   "gemini-2.5-pro-preview-06-05",
-  "gemini-2.5-pro"
+  "gemini-2.5-pro",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3-pro",
+  "gemini-3-pro-preview",
 ];
 
 const anthropicModels = [
@@ -581,6 +612,20 @@ const anthropicModels = [
   "claude-3-7-sonnet-latest",
   "claude-sonnet-4-20250514",
   "claude-opus-4-20250514",
+  // Claude 4.5 family (Sep–Oct 2025)
+  "claude-sonnet-4-5",
+  "claude-sonnet-4-5-20250929",
+  "claude-sonnet-4-5-latest",
+  "claude-haiku-4-5",
+  "claude-haiku-4-5-20251001",
+  "claude-haiku-4-5-latest",
+  // Claude 4.6 / 4.7 family
+  "claude-sonnet-4-6",
+  "claude-sonnet-4-6-latest",
+  "claude-opus-4-5",
+  "claude-opus-4-6",
+  "claude-opus-4-7",
+  "claude-opus-4-7-latest",
 ];
 
 const baiduModels = [
@@ -595,6 +640,9 @@ const baiduModels = [
   "ernie-speed-8k",
   "ernie-lite-8k",
   "ernie-tiny-8k",
+  "ernie-4.5",
+  "ernie-4.5-turbo-32k",
+  "ernie-x1",
 ];
 
 const bytedanceModels = [
@@ -604,6 +652,10 @@ const bytedanceModels = [
   "Doubao-pro-4k",
   "Doubao-pro-32k",
   "Doubao-pro-128k",
+  "Doubao-pro-256k",
+  "Doubao-1.5-pro-32k",
+  "Doubao-1.5-pro-256k",
+  "Doubao-1.5-lite-32k",
 ];
 
 const alibabaModes = [
@@ -617,6 +669,13 @@ const alibabaModes = [
   "qwen-omni-turbo",
   "qwen-vl-plus",
   "qwen-vl-max",
+  // Qwen3 family
+  "qwen3-max",
+  "qwen3-coder-plus",
+  "qwen3-vl-plus",
+  "qwen3-vl-max",
+  "qwen3-235b-a22b",
+  "qwen3-32b",
 ];
 
 const tencentModels = [
@@ -639,6 +698,8 @@ const moonshotModels = [
   "moonshot-v1-128k-vision-preview",
   "kimi-thinking-preview",
   "kimi-k2-0711-preview",
+  "kimi-k2-turbo-preview",
+  "kimi-thinking",
   "kimi-latest",
 ];
 
@@ -695,6 +756,11 @@ const chatglmModels = [
   "cogview-3-plus",
   "cogview-3",
   "cogview-3-flash", // free
+  // GLM-4.5 family
+  "glm-4.5",
+  "glm-4.5-air",
+  "glm-4-flash-250414",
+  "glm-z1-air",
   // 目前无法适配轮询任务
   //   "cogvideox",
   //   "cogvideox-flash", // free
@@ -715,6 +781,10 @@ const siliconflowModels = [
   "THUDM/glm-4-9b-chat",
   "Pro/deepseek-ai/DeepSeek-R1",
   "Pro/deepseek-ai/DeepSeek-V3",
+  "Qwen/Qwen3-32B",
+  "Qwen/Qwen3-235B-A22B",
+  "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
 ];
 
 const ai302Models = [
@@ -740,6 +810,11 @@ const ai302Models = [
   "claude-sonnet-4-20250514",
   "claude-opus-4-20250514",
   "gemini-2.5-pro",
+  "claude-sonnet-4-5",
+  "claude-opus-4-5",
+  "gemini-2.5-flash-lite",
+  "qwen3-max",
+  "glm-4.5",
 ];
 
 let seq = 1000; // 内置的模型序号生成器从1000开始
