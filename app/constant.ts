@@ -612,20 +612,18 @@ const anthropicModels = [
   "claude-3-7-sonnet-latest",
   "claude-sonnet-4-20250514",
   "claude-opus-4-20250514",
-  // Claude 4.5 family (Sep–Oct 2025)
+  // Claude 4.5 family (Sep–Oct 2025) — Anthropic does not expose
+  // -latest aliases for the 4.x generation, so only keep the
+  // versioned IDs and the unsuffixed family-level IDs.
   "claude-sonnet-4-5",
   "claude-sonnet-4-5-20250929",
-  "claude-sonnet-4-5-latest",
   "claude-haiku-4-5",
   "claude-haiku-4-5-20251001",
-  "claude-haiku-4-5-latest",
   // Claude 4.6 / 4.7 family
   "claude-sonnet-4-6",
-  "claude-sonnet-4-6-latest",
   "claude-opus-4-5",
   "claude-opus-4-6",
   "claude-opus-4-7",
-  "claude-opus-4-7-latest",
 ];
 
 const baiduModels = [
