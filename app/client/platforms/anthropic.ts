@@ -197,10 +197,11 @@ export class ClaudeApi implements LLMApi {
 
       model: modelConfig.model,
       max_tokens: modelConfig.max_tokens,
-      // Claude 4.7+ also deprecates top_k; it accepts only top_p.
-      // 4.5/4.6 still accepts top_k (and one of temperature/top_p).
+      // Claude 4.7+ deprecates all sampling controls (temperature,
+      // top_p, and top_k); the API only accepts the model's defaults.
+      // 4.5/4.6 still accepts top_k and one of temperature/top_p.
       ...(isClaude47Plus
-        ? { top_p: modelConfig.top_p }
+        ? {}
         : isClaude45Or46
         ? { temperature: modelConfig.temperature, top_k: 5 }
         : {
