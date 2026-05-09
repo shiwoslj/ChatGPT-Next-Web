@@ -197,16 +197,17 @@ export class ClaudeApi implements LLMApi {
 
       model: modelConfig.model,
       max_tokens: modelConfig.max_tokens,
+      // Claude 4.7+ also deprecates top_k; it accepts only top_p.
+      // 4.5/4.6 still accepts top_k (and one of temperature/top_p).
       ...(isClaude47Plus
         ? { top_p: modelConfig.top_p }
         : isClaude45Or46
-        ? { temperature: modelConfig.temperature }
+        ? { temperature: modelConfig.temperature, top_k: 5 }
         : {
             temperature: modelConfig.temperature,
             top_p: modelConfig.top_p,
+            top_k: 5,
           }),
-      // top_k: modelConfig.top_k,
-      top_k: 5,
     };
 
     const path = this.path(Anthropic.ChatPath);
