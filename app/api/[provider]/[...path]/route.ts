@@ -1,5 +1,5 @@
-import { ApiPath } from "@/app/constant";
-import { NextRequest } from "next/server";
+import { ApiPath, DISABLED_API_PATHS } from "@/app/constant";
+import { NextRequest, NextResponse } from "next/server";
 import { handle as openaiHandler } from "../../openai";
 import { handle as azureHandler } from "../../azure";
 import { handle as googleHandler } from "../../google";
@@ -23,6 +23,13 @@ async function handle(
 ) {
   const apiPath = `/api/${params.provider}`;
   console.log(`[${params.provider} Route] params `, params);
+  // providers this fork does not offer are closed on the server as well
+  if (DISABLED_API_PATHS.includes(apiPath)) {
+    return NextResponse.json(
+      { error: true, msg: `provider ${params.provider} is not available` },
+      { status: 404 },
+    );
+  }
   switch (apiPath) {
     case ApiPath.Azure:
       return azureHandler(req, { params });

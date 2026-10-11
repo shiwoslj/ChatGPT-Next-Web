@@ -5,9 +5,11 @@ import { ListItem, Select, PasswordInput } from "@/app/components/ui-lib";
 
 import { InputRange } from "@/app/components/input-range";
 import { Voice } from "rt-client";
-import { ServiceProvider } from "@/app/constant";
+import { ServiceProvider, isEnabledServiceProvider } from "@/app/constant";
 
-const providers = [ServiceProvider.OpenAI, ServiceProvider.Azure];
+const providers = [ServiceProvider.OpenAI, ServiceProvider.Azure].filter(
+  isEnabledServiceProvider,
+);
 
 const models = ["gpt-4o-realtime-preview-2024-10-01"];
 

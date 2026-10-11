@@ -67,6 +67,7 @@ import {
   RELEASE_URL,
   STORAGE_KEY,
   ServiceProvider,
+  isEnabledServiceProvider,
   SlotID,
   UPDATE_URL,
   Stability,
@@ -1845,11 +1846,13 @@ export function Settings() {
                         );
                       }}
                     >
-                      {Object.entries(ServiceProvider).map(([k, v]) => (
-                        <option value={v} key={k}>
-                          {k}
-                        </option>
-                      ))}
+                      {Object.entries(ServiceProvider)
+                        .filter(([, v]) => isEnabledServiceProvider(v))
+                        .map(([k, v]) => (
+                          <option value={v} key={k}>
+                            {k}
+                          </option>
+                        ))}
                     </Select>
                   </ListItem>
 

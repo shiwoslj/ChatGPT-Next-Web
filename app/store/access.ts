@@ -1,6 +1,7 @@
 import {
   GoogleSafetySettingsThreshold,
   ServiceProvider,
+  isEnabledServiceProvider,
   StoreKey,
   ApiPath,
   OPENAI_BASE_URL,
@@ -284,7 +285,7 @@ export const useAccessStore = createPersistStore(
   }),
   {
     name: StoreKey.Access,
-    version: 2,
+    version: 3,
     migrate(persistedState, version) {
       if (version < 2) {
         const state = persistedState as {
@@ -295,6 +296,14 @@ export const useAccessStore = createPersistStore(
         };
         state.openaiApiKey = state.token;
         state.azureApiVersion = "2023-08-01-preview";
+      }
+
+      if (version < 3) {
+        const state = persistedState as { provider: string };
+        // Settings shows no fields for a provider it no longer lists
+        if (!isEnabledServiceProvider(state.provider)) {
+          state.provider = ServiceProvider.OpenAI;
+        }
       }
 
       return persistedState as any;
