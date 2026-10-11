@@ -1,4 +1,7 @@
-import { getClaudeModelTraits } from "../app/utils/anthropic";
+import {
+  getClaudeMaxTokens,
+  getClaudeModelTraits,
+} from "../app/utils/anthropic";
 
 describe("getClaudeModelTraits", () => {
   test("Claude 5 family takes no sampling params and thinks by default", () => {
@@ -88,5 +91,24 @@ describe("getClaudeModelTraits", () => {
 
   test("is case-insensitive", () => {
     expect(getClaudeModelTraits("Claude-Opus-5-5").thinksByDefault).toBe(true);
+  });
+});
+
+describe("getClaudeMaxTokens", () => {
+  test("raises the limit for models that think by default", () => {
+    expect(getClaudeMaxTokens("claude-opus-5-5", 4000, true)).toBe(64000);
+    expect(getClaudeMaxTokens("claude-opus-5-5", 4000, false)).toBe(16000);
+    expect(getClaudeMaxTokens("claude-haiku-5-5", 4000, true)).toBe(64000);
+  });
+
+  test("keeps a higher configured limit", () => {
+    expect(getClaudeMaxTokens("claude-fable-5-1", 100000, true)).toBe(100000);
+    expect(getClaudeMaxTokens("claude-fable-5-1", 32000, false)).toBe(32000);
+  });
+
+  test("leaves other models at the configured limit", () => {
+    expect(getClaudeMaxTokens("claude-opus-4-8", 4000, true)).toBe(4000);
+    expect(getClaudeMaxTokens("claude-haiku-4-5", 4000, true)).toBe(4000);
+    expect(getClaudeMaxTokens("my-proxy", 4000, false)).toBe(4000);
   });
 });

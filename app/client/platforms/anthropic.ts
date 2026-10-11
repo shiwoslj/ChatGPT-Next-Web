@@ -13,7 +13,7 @@ import { getMessageTextContent, isVisionModel } from "@/app/utils";
 import { preProcessImageContent, stream } from "@/app/utils/chat";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
 import {
-  CLAUDE_THINKING_MIN_MAX_TOKENS,
+  getClaudeMaxTokens,
   getClaudeModelTraits,
 } from "@/app/utils/anthropic";
 import { RequestPayload } from "./openai";
@@ -195,16 +195,11 @@ export class ClaudeApi implements LLMApi {
       stream: shouldStream,
 
       model: modelConfig.model,
-      // max_tokens caps thinking plus the answer, so on models that think by
-      // default the UI default (4000) would cut replies short.
-      max_tokens: traits.thinksByDefault
-        ? Math.max(
-            modelConfig.max_tokens,
-            shouldStream
-              ? CLAUDE_THINKING_MIN_MAX_TOKENS.stream
-              : CLAUDE_THINKING_MIN_MAX_TOKENS.nonStream,
-          )
-        : modelConfig.max_tokens,
+      max_tokens: getClaudeMaxTokens(
+        modelConfig.model,
+        modelConfig.max_tokens,
+        shouldStream,
+      ),
       // newer models reject sampling params they no longer support
       ...(traits.temperature && { temperature: modelConfig.temperature }),
       ...(traits.top_p && { top_p: modelConfig.top_p }),

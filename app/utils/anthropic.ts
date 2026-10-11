@@ -14,7 +14,7 @@ export interface ClaudeModelTraits {
 // max_tokens floor for models that think by default, so there is room for the
 // thinking and the answer. Non-streaming requests stay lower to finish within
 // HTTP timeouts.
-export const CLAUDE_THINKING_MIN_MAX_TOKENS = {
+const CLAUDE_THINKING_MIN_MAX_TOKENS = {
   stream: 64000,
   nonStream: 16000,
 };
@@ -56,4 +56,21 @@ export function getClaudeModelTraits(model: string): ClaudeModelTraits {
     top_k: true,
     thinksByDefault: false,
   };
+}
+
+// max_tokens caps thinking plus the answer, so on models that think by default
+// the UI default (4000) would cut replies short. A higher setting is kept.
+export function getClaudeMaxTokens(
+  model: string,
+  configured: number,
+  stream: boolean,
+) {
+  if (!getClaudeModelTraits(model).thinksByDefault) return configured;
+
+  return Math.max(
+    configured,
+    stream
+      ? CLAUDE_THINKING_MIN_MAX_TOKENS.stream
+      : CLAUDE_THINKING_MIN_MAX_TOKENS.nonStream,
+  );
 }
