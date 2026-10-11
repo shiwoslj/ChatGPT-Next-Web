@@ -200,15 +200,11 @@ export const useAppConfig = createPersistStore(
     merge(persistedState, currentState) {
       const state = persistedState as ChatConfig | undefined;
       if (!state) return { ...currentState };
-      const models = currentState.models.slice();
-      state.models.forEach((pModel) => {
-        const idx = models.findIndex(
-          (v) => v.name === pModel.name && v.provider === pModel.provider,
-        );
-        if (idx !== -1) models[idx] = pModel;
-        else models.push(pModel);
-      });
-      return { ...currentState, ...state, models: models };
+      // The model list always comes from the current build. Appending the
+      // persisted list brought back models that had since been removed from
+      // DEFAULT_MODELS, in every browser that had cached them. Lists fetched
+      // from a provider are re-added by mergeModels() on load.
+      return { ...currentState, ...state, models: currentState.models };
     },
 
     migrate(persistedState, version) {

@@ -476,15 +476,24 @@ export const KnowledgeCutOffDate: Record<string, string> = {
   "gpt-5.1-mini": "2024-10",
   "gpt-5.1-nano": "2024-10",
   "gpt-5.1-codex": "2024-10",
-  // Claude 4.x family
-  "claude-sonnet-4-20250514": "2025-03",
-  "claude-opus-4-20250514": "2025-03",
-  "claude-sonnet-4-5": "2025-07",
-  "claude-haiku-4-5": "2025-07",
-  "claude-sonnet-4-6": "2025-07",
-  "claude-opus-4-5": "2025-07",
-  "claude-opus-4-6": "2025-07",
+  // Claude 4.x / 5 family ("reliable knowledge cutoff" from each model's
+  // page on platform.claude.com)
+  "claude-sonnet-4-5": "2025-01",
+  "claude-sonnet-4-5-20250929": "2025-01",
+  "claude-haiku-4-5": "2025-02",
+  "claude-haiku-4-5-20251001": "2025-02",
+  "claude-opus-4-5": "2025-05",
+  "claude-sonnet-4-6": "2025-08",
+  "claude-opus-4-6": "2025-05",
   "claude-opus-4-7": "2026-01",
+  "claude-opus-4-8": "2026-01",
+  "claude-fable-5": "2026-01",
+  "claude-sonnet-5": "2026-01",
+  "claude-opus-5": "2026-05",
+  "claude-fable-5-1": "2026-06",
+  "claude-opus-5-5": "2026-06",
+  "claude-sonnet-5-5": "2026-06",
+  "claude-haiku-5-5": "2026-06",
 };
 
 export const DEFAULT_TTS_ENGINE = "OpenAI-TTS";
@@ -506,6 +515,7 @@ export const VISION_MODEL_REGEXES = [
   /gpt-4o/,
   /gpt-4\.1/,
   /claude.*[34]/,
+  /claude-(fable|opus|sonnet|haiku)-\d/,
   /gemini-1\.5/,
   /gemini-exp/,
   /gemini-2\.[05]/,
@@ -601,35 +611,31 @@ const googleModels = [
   "gemini-3-pro-preview",
 ];
 
+// Only models Anthropic still serves; retired IDs fail at request time. Check
+// https://platform.claude.com/docs/en/about-claude/model-deprecations before
+// adding or removing entries.
 const anthropicModels = [
-  "claude-instant-1.2",
-  "claude-2.0",
-  "claude-2.1",
-  "claude-3-sonnet-20240229",
-  "claude-3-opus-20240229",
-  "claude-3-opus-latest",
-  "claude-3-haiku-20240307",
-  "claude-3-5-haiku-20241022",
-  "claude-3-5-haiku-latest",
-  "claude-3-5-sonnet-20240620",
-  "claude-3-5-sonnet-20241022",
-  "claude-3-5-sonnet-latest",
-  "claude-3-7-sonnet-20250219",
-  "claude-3-7-sonnet-latest",
-  "claude-sonnet-4-20250514",
-  "claude-opus-4-20250514",
-  // Claude 4.5 family (Sep–Oct 2025) — Anthropic does not expose
+  // Claude 4.5 family (Sep–Nov 2025) — Anthropic does not expose
   // -latest aliases for the 4.x generation, so only keep the
   // versioned IDs and the unsuffixed family-level IDs.
-  "claude-sonnet-4-5",
+  "claude-sonnet-4-5", // deprecated, retires 2026-11-30
   "claude-sonnet-4-5-20250929",
   "claude-haiku-4-5",
   "claude-haiku-4-5-20251001",
-  // Claude 4.6 / 4.7 family
-  "claude-sonnet-4-6",
   "claude-opus-4-5",
+  // Claude 4.6 – 4.8
+  "claude-sonnet-4-6",
   "claude-opus-4-6",
   "claude-opus-4-7",
+  "claude-opus-4-8",
+  // Claude 5 family (Jun–Oct 2026); IDs carry no date suffix
+  "claude-fable-5",
+  "claude-sonnet-5",
+  "claude-opus-5",
+  "claude-fable-5-1",
+  "claude-opus-5-5",
+  "claude-sonnet-5-5",
+  "claude-haiku-5-5",
 ];
 
 const baiduModels = [

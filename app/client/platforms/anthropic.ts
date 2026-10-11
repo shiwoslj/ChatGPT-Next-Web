@@ -12,6 +12,10 @@ import { ANTHROPIC_BASE_URL } from "@/app/constant";
 import { getMessageTextContent, isVisionModel } from "@/app/utils";
 import { preProcessImageContent, stream } from "@/app/utils/chat";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
+import {
+  CLAUDE_THINKING_MIN_MAX_TOKENS,
+  getClaudeModelTraits,
+} from "@/app/utils/anthropic";
 import { RequestPayload } from "./openai";
 import { fetch } from "@/app/utils/stream";
 
@@ -81,7 +85,12 @@ export class ClaudeApi implements LLMApi {
   extractMessage(res: any) {
     console.log("[Response] claude response: ", res);
 
-    return res?.content?.[0]?.text;
+    // a thinking block can come before the answer, so content[0] is not
+    // always the text
+    return res?.content
+      ?.filter((block: any) => block?.type === "text")
+      .map((block: any) => block.text)
+      .join("");
   }
   async chat(options: ChatOptions): Promise<void> {
     const visionModel = isVisionModel(options.config.model);
@@ -179,36 +188,27 @@ export class ClaudeApi implements LLMApi {
       });
     }
 
-    // Claude 4.5+ rejects sending both temperature and top_p together;
-    // Claude 4.7+ deprecates temperature entirely. Match the minor version
-    // (1–2 digits) and excludes legacy date-suffixed IDs like
-    // "claude-opus-4-20250514" where the segment after "4-" is an 8-digit date.
-    const claude4Match =
-      /claude-(?:haiku|sonnet|opus)-4-(\d{1,2})(?:-|$)/i.exec(
-        modelConfig.model,
-      );
-    const claude4Minor = claude4Match ? parseInt(claude4Match[1], 10) : 0;
-    const isClaude47Plus = claude4Minor >= 7;
-    const isClaude45Or46 = claude4Minor === 5 || claude4Minor === 6;
+    const traits = getClaudeModelTraits(modelConfig.model);
 
     const requestBody: AnthropicChatRequest = {
       messages: prompt,
       stream: shouldStream,
 
       model: modelConfig.model,
-      max_tokens: modelConfig.max_tokens,
-      // Claude 4.7+ deprecates all sampling controls (temperature,
-      // top_p, and top_k); the API only accepts the model's defaults.
-      // 4.5/4.6 still accepts top_k and one of temperature/top_p.
-      ...(isClaude47Plus
-        ? {}
-        : isClaude45Or46
-        ? { temperature: modelConfig.temperature, top_k: 5 }
-        : {
-            temperature: modelConfig.temperature,
-            top_p: modelConfig.top_p,
-            top_k: 5,
-          }),
+      // max_tokens caps thinking plus the answer, so on models that think by
+      // default the UI default (4000) would cut replies short.
+      max_tokens: traits.thinksByDefault
+        ? Math.max(
+            modelConfig.max_tokens,
+            shouldStream
+              ? CLAUDE_THINKING_MIN_MAX_TOKENS.stream
+              : CLAUDE_THINKING_MIN_MAX_TOKENS.nonStream,
+          )
+        : modelConfig.max_tokens,
+      // newer models reject sampling params they no longer support
+      ...(traits.temperature && { temperature: modelConfig.temperature }),
+      ...(traits.top_p && { top_p: modelConfig.top_p }),
+      ...(traits.top_k && { top_k: 5 }),
     };
 
     const path = this.path(Anthropic.ChatPath);

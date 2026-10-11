@@ -17,6 +17,10 @@ describe("isVisionModel", () => {
     const visionModels = [
       "gpt-4-vision",
       "claude-3-opus",
+      "claude-haiku-4-5",
+      "claude-opus-5-5",
+      "claude-sonnet-5",
+      "claude-fable-5-1",
       "gemini-1.5-pro",
       "gemini-2.0",
       "gemini-exp-vision",
