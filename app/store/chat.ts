@@ -202,6 +202,19 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
   return output;
 }
 
+// Whether MCP is on cannot change while a deployment is live, so ask the
+// server once per page load rather than on every message: each call is a
+// round trip, and one that failed used to abort the send. A failed call (for
+// instance from a tab that was opened before a redeploy) counts as "off".
+let mcpEnabledOnce: Promise<boolean> | undefined;
+function isMcpEnabledOnce(): Promise<boolean> {
+  mcpEnabledOnce ??= isMcpEnabled().then(
+    (enabled) => !!enabled,
+    () => false,
+  );
+  return mcpEnabledOnce;
+}
+
 async function getMcpSystemPrompt(): Promise<string> {
   const tools = await getAllTools();
 
@@ -555,7 +568,7 @@ export const useChatStore = createPersistStore(
           (session.mask.modelConfig.model.startsWith("gpt-") ||
             session.mask.modelConfig.model.startsWith("chatgpt-"));
 
-        const mcpEnabled = await isMcpEnabled();
+        const mcpEnabled = await isMcpEnabledOnce();
         const mcpSystemPrompt = mcpEnabled ? await getMcpSystemPrompt() : "";
 
         var systemPrompts: ChatMessage[] = [];
@@ -824,8 +837,8 @@ export const useChatStore = createPersistStore(
       },
 
       /** check if the message contains MCP JSON and execute the MCP action */
-      checkMcpJson(message: ChatMessage) {
-        const mcpEnabled = isMcpEnabled();
+      async checkMcpJson(message: ChatMessage) {
+        const mcpEnabled = await isMcpEnabledOnce();
         if (!mcpEnabled) return;
         const content = getMessageTextContent(message);
         if (isMcpJson(content)) {
