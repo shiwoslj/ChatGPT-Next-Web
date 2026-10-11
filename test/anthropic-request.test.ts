@@ -81,3 +81,28 @@ describe("ClaudeApi.extractMessage", () => {
     ).toBe("Hi");
   });
 });
+
+describe("ClaudeApi refusal fallback", () => {
+  test("is requested for the models that accept it", async () => {
+    const models = [
+      "claude-fable-5-1",
+      "claude-opus-5-5",
+      "claude-opus-5",
+      "claude-sonnet-5-5",
+    ];
+    for (const model of models) {
+      const { body, headers } = await sentRequest(model);
+      expect(body.fallbacks).toBe("default");
+      expect(headers["anthropic-beta"]).toBe("server-side-fallback-2026-07-01");
+    }
+  });
+
+  test("is left out for every other model", async () => {
+    const models = ["claude-haiku-5-5", "claude-opus-4-8", "claude-haiku-4-5"];
+    for (const model of models) {
+      const { body, headers } = await sentRequest(model);
+      expect(body).not.toHaveProperty("fallbacks");
+      expect(headers).not.toHaveProperty("anthropic-beta");
+    }
+  });
+});

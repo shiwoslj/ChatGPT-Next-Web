@@ -1,6 +1,8 @@
 import {
+  getClaudeFallbackModel,
   getClaudeMaxTokens,
   getClaudeModelTraits,
+  supportsClaudeDefaultFallback,
 } from "../app/utils/anthropic";
 
 describe("getClaudeModelTraits", () => {
@@ -110,5 +112,105 @@ describe("getClaudeMaxTokens", () => {
     expect(getClaudeMaxTokens("claude-opus-4-8", 4000, true)).toBe(4000);
     expect(getClaudeMaxTokens("claude-haiku-4-5", 4000, true)).toBe(4000);
     expect(getClaudeMaxTokens("my-proxy", 4000, false)).toBe(4000);
+  });
+});
+
+describe("supportsClaudeDefaultFallback", () => {
+  test("is limited to the models that accept fallbacks: default", () => {
+    const supported = [
+      "claude-fable-5-1",
+      "claude-opus-5-5",
+      "claude-opus-5",
+      "claude-sonnet-5-5",
+    ];
+    for (const model of supported) {
+      expect(supportsClaudeDefaultFallback(model)).toBe(true);
+    }
+
+    const unsupported = [
+      "claude-haiku-5-5",
+      "claude-fable-5",
+      "claude-sonnet-5",
+      "claude-opus-4-8",
+      "claude-opus-5-5-custom",
+      "gpt-5",
+    ];
+    for (const model of unsupported) {
+      expect(supportsClaudeDefaultFallback(model)).toBe(false);
+    }
+  });
+});
+
+describe("getClaudeFallbackModel", () => {
+  const requested = "claude-opus-5-5";
+
+  test("reads the model from a fallback block", () => {
+    const event = {
+      type: "content_block_start",
+      index: 0,
+      content_block: {
+        type: "fallback",
+        from: { model: "claude-opus-5-5" },
+        to: { model: "claude-opus-4-8" },
+      },
+    };
+    expect(getClaudeFallbackModel(event, requested)).toBe("claude-opus-4-8");
+    // an explicit fallback block counts even when the IDs share a prefix
+    expect(getClaudeFallbackModel(event, "claude-opus-5")).toBe(
+      "claude-opus-4-8",
+    );
+    expect(
+      getClaudeFallbackModel(
+        {
+          type: "content_block_start",
+          content_block: {
+            type: "fallback",
+            from: { model: "claude-opus-5" },
+            to: { model: "claude-opus-5-5" },
+          },
+        },
+        "claude-opus-5",
+      ),
+    ).toBe("claude-opus-5-5");
+  });
+
+  test("reads the model from message_start when the turn was served by a fallback", () => {
+    const event = {
+      type: "message_start",
+      message: { model: "claude-opus-4-8" },
+    };
+    expect(getClaudeFallbackModel(event, requested)).toBe("claude-opus-4-8");
+  });
+
+  test("is undefined when the requested model answered", () => {
+    expect(
+      getClaudeFallbackModel(
+        { type: "message_start", message: { model: "claude-opus-5-5" } },
+        requested,
+      ),
+    ).toBeUndefined();
+    // a snapshot ID of the requested model
+    expect(
+      getClaudeFallbackModel(
+        {
+          type: "message_start",
+          message: { model: "claude-opus-5-5-20260922" },
+        },
+        requested,
+      ),
+    ).toBeUndefined();
+  });
+
+  test("ignores other events", () => {
+    const events = [
+      { type: "content_block_start", content_block: { type: "text" } },
+      { type: "content_block_delta", delta: { type: "text_delta", text: "x" } },
+      { type: "message_delta", delta: { stop_reason: "end_turn" } },
+      { type: "ping" },
+      undefined,
+    ];
+    for (const event of events) {
+      expect(getClaudeFallbackModel(event, requested)).toBeUndefined();
+    }
   });
 });

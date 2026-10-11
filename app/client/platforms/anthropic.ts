@@ -13,8 +13,11 @@ import { getMessageTextContent, isVisionModel } from "@/app/utils";
 import { preProcessImageContent, stream } from "@/app/utils/chat";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
 import {
+  CLAUDE_FALLBACK_BETA,
+  getClaudeFallbackModel,
   getClaudeMaxTokens,
   getClaudeModelTraits,
+  supportsClaudeDefaultFallback,
 } from "@/app/utils/anthropic";
 import { RequestPayload } from "./openai";
 import { fetch } from "@/app/utils/stream";
@@ -44,6 +47,7 @@ export interface AnthropicChatRequest {
   top_k?: number; // Only sample from the top K options for each subsequent token.
   metadata?: object; // An object describing metadata about the request.
   stream?: boolean; // Whether to incrementally stream the response using server-sent events.
+  fallbacks?: "default"; // Re-run on a fallback model when the request is declined (beta).
 }
 
 export interface ChatRequest {
@@ -189,6 +193,12 @@ export class ClaudeApi implements LLMApi {
     }
 
     const traits = getClaudeModelTraits(modelConfig.model);
+    const useFallback = supportsClaudeDefaultFallback(modelConfig.model);
+    const headers = {
+      ...getHeaders(),
+      "anthropic-version": accessStore.anthropicApiVersion,
+      ...(useFallback && { "anthropic-beta": CLAUDE_FALLBACK_BETA }),
+    };
 
     const requestBody: AnthropicChatRequest = {
       messages: prompt,
@@ -204,6 +214,9 @@ export class ClaudeApi implements LLMApi {
       ...(traits.temperature && { temperature: modelConfig.temperature }),
       ...(traits.top_p && { top_p: modelConfig.top_p }),
       ...(traits.top_k && { top_k: 5 }),
+      // when the model's safety classifiers decline, have the API re-run the
+      // request on a fallback model instead of returning the refusal
+      ...(useFallback && { fallbacks: "default" as const }),
     };
 
     const path = this.path(Anthropic.ChatPath);
@@ -213,6 +226,7 @@ export class ClaudeApi implements LLMApi {
 
     if (shouldStream) {
       let index = -1;
+      let fallbackNoted = false;
       const [tools, funcs] = usePluginStore
         .getState()
         .getAsTools(
@@ -221,10 +235,7 @@ export class ClaudeApi implements LLMApi {
       return stream(
         path,
         requestBody,
-        {
-          ...getHeaders(),
-          "anthropic-version": accessStore.anthropicApiVersion,
-        },
+        headers,
         // @ts-ignore
         tools.map((tool) => ({
           name: tool?.function?.name,
@@ -254,6 +265,16 @@ export class ClaudeApi implements LLMApi {
                 index: number;
               };
           chunkJson = JSON.parse(text);
+
+          // say once when a fallback model answered instead of the selected one
+          const fallbackModel =
+            useFallback &&
+            !fallbackNoted &&
+            getClaudeFallbackModel(chunkJson, modelConfig.model);
+          if (fallbackModel) {
+            fallbackNoted = true;
+            return `\n\n[${modelConfig.model} declined this request; answered by ${fallbackModel}.]\n\n`;
+          }
 
           // Handle refusal stop reason in message_delta
           if (chunkJson?.delta?.stop_reason === "refusal") {
@@ -332,12 +353,9 @@ export class ClaudeApi implements LLMApi {
         method: "POST",
         body: JSON.stringify(requestBody),
         signal: controller.signal,
-        headers: {
-          ...getHeaders(), // get common headers
-          "anthropic-version": accessStore.anthropicApiVersion,
-          // do not send `anthropicApiKey` in browser!!!
-          // Authorization: getAuthKey(accessStore.anthropicApiKey),
-        },
+        // do not send `anthropicApiKey` in browser!!!
+        // Authorization: getAuthKey(accessStore.anthropicApiKey),
+        headers,
       };
 
       try {

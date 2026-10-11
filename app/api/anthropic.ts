@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "./auth";
 import { isModelNotavailableInServer } from "@/app/utils/model";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
+import { CLAUDE_FALLBACK_BETA } from "@/app/utils/anthropic";
 
 const ALLOWD_PATH = new Set([Anthropic.ChatPath, Anthropic.ChatPath1]);
 
@@ -103,6 +104,10 @@ async function request(req: NextRequest) {
         req.headers.get("anthropic-version") ||
         serverConfig.anthropicApiVersion ||
         Anthropic.Vision,
+      // pass on the one beta the client uses; other values are not forwarded
+      ...(req.headers.get("anthropic-beta") === CLAUDE_FALLBACK_BETA && {
+        "anthropic-beta": CLAUDE_FALLBACK_BETA,
+      }),
     },
     method: req.method,
     body: req.body,

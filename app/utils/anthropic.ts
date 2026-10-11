@@ -74,3 +74,46 @@ export function getClaudeMaxTokens(
       : CLAUDE_THINKING_MIN_MAX_TOKENS.nonStream,
   );
 }
+
+// Server-side refusal fallback: when a model's safety classifiers decline a
+// request, the API re-runs it on a fallback model within the same call.
+// `fallbacks: "default"` lets Anthropic pick that model, and needs this beta
+// header. Only the models listed accept it; the rest return the refusal.
+export const CLAUDE_FALLBACK_BETA = "server-side-fallback-2026-07-01";
+
+const CLAUDE_DEFAULT_FALLBACK_MODELS = [
+  "claude-fable-5-1",
+  "claude-opus-5-5",
+  "claude-opus-5",
+  "claude-sonnet-5-5",
+];
+
+export function supportsClaudeDefaultFallback(model: string) {
+  return CLAUDE_DEFAULT_FALLBACK_MODELS.includes(model.toLowerCase());
+}
+
+// The model that answered, when this stream event shows a fallback model took
+// over from the requested one: for the whole turn (message_start names it) or
+// from this block on (a "fallback" block). Undefined otherwise.
+export function getClaudeFallbackModel(
+  event: any,
+  requestedModel: string,
+): string | undefined {
+  if (
+    event?.type === "content_block_start" &&
+    event.content_block?.type === "fallback"
+  ) {
+    const to = event.content_block.to?.model;
+    return typeof to === "string" ? to : undefined;
+  }
+
+  if (event?.type === "message_start") {
+    const servedBy = event.message?.model;
+    // a snapshot ID of the requested model is still the requested model
+    if (typeof servedBy === "string" && !servedBy.startsWith(requestedModel)) {
+      return servedBy;
+    }
+  }
+
+  return undefined;
+}
