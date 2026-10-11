@@ -142,6 +142,37 @@ export enum ServiceProvider {
   "302.AI" = "302.AI",
 }
 
+// This fork only offers these providers. The others stay in the codebase so
+// upstream merges stay clean, but they are filtered out of the model list and
+// Settings, and their API routes are closed (DISABLED_API_PATHS).
+export const ENABLED_SERVICE_PROVIDERS: readonly ServiceProvider[] = [
+  ServiceProvider.OpenAI,
+  ServiceProvider.Google,
+  ServiceProvider.Anthropic,
+  ServiceProvider.DeepSeek,
+];
+
+export function isEnabledServiceProvider(providerName: string) {
+  return (ENABLED_SERVICE_PROVIDERS as readonly string[]).includes(
+    providerName,
+  );
+}
+
+export const DISABLED_API_PATHS: readonly string[] = [
+  ApiPath.Azure,
+  ApiPath.Baidu,
+  ApiPath.ByteDance,
+  ApiPath.Alibaba,
+  ApiPath.Tencent,
+  ApiPath.Moonshot,
+  ApiPath.Iflytek,
+  ApiPath.Stability,
+  ApiPath.XAI,
+  ApiPath.ChatGLM,
+  ApiPath.SiliconFlow,
+  ApiPath["302.AI"],
+];
+
 // Google API safety settings, see https://ai.google.dev/gemini-api/docs/safety-settings
 // BLOCK_NONE will not block any content, and BLOCK_ONLY_HIGH will block only high-risk content.
 export enum GoogleSafetySettingsThreshold {
@@ -828,7 +859,7 @@ const ai302Models = [
 ];
 
 let seq = 1000; // 内置的模型序号生成器从1000开始
-export const DEFAULT_MODELS = [
+const ALL_DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
     available: true,
@@ -995,6 +1026,10 @@ export const DEFAULT_MODELS = [
     },
   })),
 ] as const;
+
+export const DEFAULT_MODELS = ALL_DEFAULT_MODELS.filter((m) =>
+  isEnabledServiceProvider(m.provider.providerName),
+);
 
 export const CHAT_PAGE_SIZE = 15;
 export const MAX_RENDER_MSG_COUNT = 45;

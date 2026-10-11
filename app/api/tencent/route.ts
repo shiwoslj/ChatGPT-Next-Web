@@ -1,5 +1,10 @@
 import { getServerSideConfig } from "@/app/config/server";
-import { TENCENT_BASE_URL, ModelProvider } from "@/app/constant";
+import {
+  ApiPath,
+  DISABLED_API_PATHS,
+  TENCENT_BASE_URL,
+  ModelProvider,
+} from "@/app/constant";
 import { prettyObject } from "@/app/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/api/auth";
@@ -12,6 +17,14 @@ async function handle(
   { params }: { params: { path: string[] } },
 ) {
   console.log("[Tencent Route] params ", params);
+
+  // same check as app/api/[provider]/[...path]/route.ts, which this route bypasses
+  if (DISABLED_API_PATHS.includes(ApiPath.Tencent)) {
+    return NextResponse.json(
+      { error: true, msg: "provider tencent is not available" },
+      { status: 404 },
+    );
+  }
 
   if (req.method === "OPTIONS") {
     return NextResponse.json({ body: "OK" }, { status: 200 });
