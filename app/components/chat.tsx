@@ -104,6 +104,7 @@ import {
   DEFAULT_TTS_ENGINE,
   ModelProvider,
   Path,
+  PLUGINS_ENABLED,
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
   UNFINISHED_INPUT,
@@ -795,7 +796,7 @@ export function ChatActions(props: {
           />
         )}
 
-        {showPlugins(currentProviderName, currentModel) && (
+        {PLUGINS_ENABLED && showPlugins(currentProviderName, currentModel) && (
           <ChatAction
             onClick={() => {
               if (pluginStore.getAll().length == 0) {

@@ -14,7 +14,6 @@ import { handle as deepseekHandler } from "../../deepseek";
 import { handle as siliconflowHandler } from "../../siliconflow";
 import { handle as xaiHandler } from "../../xai";
 import { handle as chatglmHandler } from "../../glm";
-import { handle as proxyHandler } from "../../proxy";
 import { handle as ai302Handler } from "../../302ai";
 
 async function handle(
@@ -63,7 +62,14 @@ async function handle(
     case ApiPath["302.AI"]:
       return ai302Handler(req, { params });
     default:
-      return proxyHandler(req, { params });
+      // This used to fall through to a generic proxy that forwarded the
+      // request to any URL in the X-Base-URL header without checking the
+      // access code, and attached the server's OpenAI key when that URL
+      // merely contained "api.openai.com".
+      return NextResponse.json(
+        { error: true, msg: `provider ${params.provider} is not available` },
+        { status: 404 },
+      );
   }
 }
 

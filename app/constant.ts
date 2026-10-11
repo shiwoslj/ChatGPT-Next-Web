@@ -173,6 +173,11 @@ export const DISABLED_API_PATHS: readonly string[] = [
   ApiPath["302.AI"],
 ];
 
+// Plugins reach third-party APIs through /api/proxy, which this fork closed
+// because it forwarded requests without checking the access code. With no
+// proxy the feature cannot work in the web app, so it is switched off.
+export const PLUGINS_ENABLED = false;
+
 // Google API safety settings, see https://ai.google.dev/gemini-api/docs/safety-settings
 // BLOCK_NONE will not block any content, and BLOCK_ONLY_HIGH will block only high-risk content.
 export enum GoogleSafetySettingsThreshold {

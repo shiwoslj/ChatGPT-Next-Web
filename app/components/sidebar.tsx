@@ -23,6 +23,7 @@ import {
   MIN_SIDEBAR_WIDTH,
   NARROW_SIDEBAR_WIDTH,
   Path,
+  PLUGINS_ENABLED,
   REPO_URL,
 } from "../constant";
 
@@ -34,7 +35,9 @@ import clsx from "clsx";
 import { isMcpEnabled } from "../mcp/actions";
 
 const DISCOVERY = [
-  { name: Locale.Plugin.Name, path: Path.Plugins },
+  ...(PLUGINS_ENABLED
+    ? [{ name: Locale.Plugin.Name, path: Path.Plugins }]
+    : []),
   { name: Locale.SearchChat.Page.Title, path: Path.SearchChat },
 ];
 
