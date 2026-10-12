@@ -23,6 +23,7 @@
 | #11 | 2026-10-11 | `c93ed4f` | 关闭无鉴权的 `/api/proxy`,停用插件,清空 `public/plugins.json`。                                                                                                      |
 | #12 | 2026-10-11 | `9a47644` | MCP 未启用时拒绝全部 MCP 服务端函数;聊天不再每条消息查询一次 MCP 开关。                                                                                              |
 | #13 | 2026-10-11 | `f8915ee` | Google Analytics 不再默认使用上游的 ID;移除付费版推广和点击统计。                                                                                                    |
+| #14 | 2026-10-12 | `da9a936` | 新增 `HANDOVER.md`、`docs/HANDOVER-LOG.md` 和项目级 `CLAUDE.md`。纯文档,代码不变。                                                                                   |
 
 ## 决策记录
 
